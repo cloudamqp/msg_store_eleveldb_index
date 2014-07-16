@@ -43,7 +43,7 @@ lookup(Key, Ref) ->
   end.
 
 insert(Obj = #msg_location{ msg_id = MsgId }, Ref) ->
-  ok = eleveldb:put(Ref, [{put, MsgId, term_to_binary(Obj)}], []),
+  ok = eleveldb:put(Ref, MsgId, term_to_binary(Obj), []),
   ok.
 
 update(Obj = #msg_location{ msg_id = MsgId }, Ref) ->
