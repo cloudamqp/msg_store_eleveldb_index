@@ -95,7 +95,8 @@ delete_by_file(File, Ref) ->
                       _ ->
                         Acc
                     end
-                end, [], []).
+                end, [], []),
+  ok.
 
 terminate(Ref) ->
   eleveldb:close(Ref).
