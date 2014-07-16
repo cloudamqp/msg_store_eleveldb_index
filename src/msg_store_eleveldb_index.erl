@@ -13,27 +13,27 @@
          delete_object/2, delete_by_file/2, terminate/1]).
 
 -include_lib("rabbit_common/include/rabbit_msg_store.hrl").
-%-include_lib("eleveldb/include/eleveldb.hrl").
 
 -define(ELEVELDB_DIR, "eleveldb_msg_index").
 
 new(Dir) ->
   Path = get_path(Dir),
-  {ok, Ref} = init(Path),
-  Ref.
+  case eleveldb:open(Path, [{create_if_missing, true},
+                            {error_if_exists, false},
+                            {verify_compactions, true},
+                            {use_bloomfilter, true}]) of
+    {ok, Ref} -> Ref;
+    {error, Reason} ->
+      lager:error("Leveldb backend error ~s\n", [Reason]),
+      error
+  end.
 
 recover(Dir) ->
   Path = get_path(Dir),
-  {ok, Ref} = init(Path),
-  {ok, Ref}.
+  eleveldb:open(Path, [{create_if_missing, false}]).
 
 get_path(Dir) ->
   filename:join(Dir, ?ELEVELDB_DIR).
-
-init(Dir) ->
-    {ok, Ref} = eleveldb:open(Dir,
-                              [{create_if_missing, true}]),
-    Ref.
 
 %% Key is MsgId which is binary already
 lookup(Key, Ref) ->
