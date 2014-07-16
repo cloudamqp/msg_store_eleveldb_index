@@ -31,3 +31,8 @@ Start RabbitMQ and enjoy (and report bugs too).
 eLevelDB required SMP, so on single core machiens add to `/etc/rabbitmq/rabbitmq-env.conf`:
     
     SERVER_START_ARGS="-smp enable"
+
+# Creds #
+
+Based on works of [Alvaro Videla](https://github.com/videlalvaro)
+
