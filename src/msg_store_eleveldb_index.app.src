@@ -1,0 +1,7 @@
+{application, msg_store_eleveldb_index,
+  [{description, "eLevelDB backend for RabbitMQ message index store"},
+  {vsn, "%%VSN%%"},
+  {modules, []},
+  {registered, []},
+  {env, []},
+  {applications, [kernel, stdlib, eleveldb]}]}.
