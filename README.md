@@ -34,5 +34,7 @@ eLevelDB required SMP, so on single core machiens add to `/etc/rabbitmq/rabbitmq
 
 # Creds #
 
-Based on works of [Alvaro Videla](https://github.com/videlalvaro)
+Based on works of [Alvaro Videla](https://github.com/videlalvaro). 
+
+Thanks to Basho for eLevelDB and to Google for LevelDB.
 
