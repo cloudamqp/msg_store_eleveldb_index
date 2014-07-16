@@ -31,7 +31,12 @@ Start RabbitMQ and enjoy (and report bugs too).
 eLevelDB required SMP, so on single core machiens add to `/etc/rabbitmq/rabbitmq-env.conf`:
     
     SERVER_START_ARGS="-smp enable"
+    
+# Configure #
 
+In the RabbitMQ configuration file set `msg_store_index_module` to `msg_store_eleveldb_index`.
+Check out the [docs](https://www.rabbitmq.com/configure.html), near the bottom of the page you can read about `msg_store_index_module`.
+  
 # Creds #
 
 Based on works of [Alvaro Videla](https://github.com/videlalvaro). 
