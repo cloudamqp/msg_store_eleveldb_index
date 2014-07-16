@@ -37,24 +37,24 @@ get_path(Dir) ->
 
 %% Key is MsgId which is binary already
 lookup(Key, Ref) ->
-  case eleveldb:get(Ref, Key) of
+  case eleveldb:get(Ref, Key, []) of
     {ok, Value} -> #msg_location{} = binary_to_term(Value);
     _ -> not_found
   end.
 
 insert(Obj = #msg_location{ msg_id = MsgId }, Ref) ->
-  ok = eleveldb:put(Ref, [{put, MsgId, term_to_binary(Obj)}]),
+  ok = eleveldb:put(Ref, [{put, MsgId, term_to_binary(Obj)}], []),
   ok.
 
 update(Obj = #msg_location{ msg_id = MsgId }, Ref) ->
-  ok = eleveldb:write(Ref, [{put, MsgId, term_to_binary(Obj)}]),
+  ok = eleveldb:put(Ref, MsgId, term_to_binary(Obj), []),
   ok.
 
 update_fun({Position, NewValue}, ObjAcc) ->
   setelement(Position, ObjAcc, NewValue).
 
 update_fields(Key, Updates, Ref) ->
-  case eleveldb:get(Ref, Key) of
+  case eleveldb:get(Ref, Key, []) of
     {ok, Value} ->
       Obj = #msg_location{} = binary_to_term(Value),
       NewObj =
@@ -62,22 +62,22 @@ update_fields(Key, Updates, Ref) ->
         true -> lists:foldl(fun update_fun/2, Obj, Updates);
         false -> update_fun(Updates, Obj)
       end,
-      ok = eleveldb:write(Ref, [{put, Key, term_to_binary(NewObj)}]),
+      ok = eleveldb:put(Ref, Key, term_to_binary(NewObj), []),
       ok;
     _ -> not_found
   end,
   ok.
 
 delete(Key, Ref) ->
-  ok = eleveldb:write(Ref, [{delete, Key}]),
+  ok = eleveldb:delete(Ref, Key, []),
   ok.
 
 delete_object(Obj = #msg_location{ msg_id = MsgId }, Ref) ->
-  case eleveldb:get(Ref, MsgId) of
+  case eleveldb:get(Ref, MsgId, []) of
     {ok, Value} ->
       case Obj =:= binary_to_term(Value) of
         true ->
-          ok = eleveldb:write(Ref, [{delete, MsgId}]),
+          ok = eleveldb:delete(Ref, MsgId, []),
           ok;
         _ ->
           not_found
@@ -90,7 +90,7 @@ delete_by_file(File, Ref) ->
                 fun(Key, Obj, Acc) ->
                     case (binary_to_term(Obj))#msg_location.file of
                       File ->
-                        eleveldb:delete(Ref, Key),
+                        eleveldb:delete(Ref, Key, []),
                         Acc;
                       _ ->
                         Acc
