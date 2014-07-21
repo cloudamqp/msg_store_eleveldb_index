@@ -40,6 +40,10 @@ To make RabbitMQ use the plugin as index module you have to configure it in `/et
 
     {rabbit, [{msg_store_index_module, msg_store_eleveldb_index}]}
 
+# Use cases #
+
+In a default RabbitMQ installation your RAM amount will limit how many messages you can enqueue. This plugin allow you to queue messages until you run out of disc space.
+
 # Creds #
 
 Based on works of [Alvaro Videla](https://github.com/videlalvaro).
