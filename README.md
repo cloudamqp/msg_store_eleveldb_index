@@ -26,20 +26,23 @@ Copy the files inside `msg_store_eleveldb_index/dist` into your RabbitMQ `plugin
 
 Start RabbitMQ and enjoy (and report bugs too).
 
-# NOTE #
+# Usage #
 
 eLevelDB required SMP, so on single core machiens add to `/etc/rabbitmq/rabbitmq-env.conf`:
-    
-    SERVER_START_ARGS="-smp enable"
-    
-# Configure #
 
-In the RabbitMQ configuration file set `msg_store_index_module` to `msg_store_eleveldb_index`.
-Check out the [docs](https://www.rabbitmq.com/configure.html), near the bottom of the page you can read about `msg_store_index_module`.
-  
+    SERVER_START_ARGS="-smp enable"
+
+Enable the plugin with:
+
+    rabbitmq-plugins enable msg_store_eleveldb_index
+
+To make RabbitMQ use the plugin as index module you have to configure it in `/etc/rabbitmq/rabbitmq.config`:
+
+    {rabbit, [{msg_store_index_module, msg_store_eleveldb_index}]}
+
 # Creds #
 
-Based on works of [Alvaro Videla](https://github.com/videlalvaro). 
+Based on works of [Alvaro Videla](https://github.com/videlalvaro).
 
 Thanks to Basho for eLevelDB and to Google for LevelDB.
 
