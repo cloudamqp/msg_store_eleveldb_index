@@ -24,10 +24,6 @@ Then clone this repository:
 
 Copy the files inside `msg_store_eleveldb_index/dist` into your RabbitMQ `plugins` folder. Don't copy the file `rabbit_common-0.0.0.ez`.
 
-eLevelDB required SMP, so on single core machiens add to `/etc/rabbitmq/rabbitmq-env.conf`:
-
-    SERVER_START_ARGS="-smp enable"
-
 Enable the plugin with:
 
     rabbitmq-plugins enable msg_store_eleveldb_index
@@ -35,6 +31,10 @@ Enable the plugin with:
 To make RabbitMQ use the plugin as index module you have to configure it in `/etc/rabbitmq/rabbitmq.config`:
 
     {rabbit, [{msg_store_index_module, msg_store_eleveldb_index}]}
+
+eLevelDB required SMP, so on single core machines add to `/etc/rabbitmq/rabbitmq-env.conf`:
+
+    SERVER_START_ARGS="-smp enable"
 
 ## Use case
 
