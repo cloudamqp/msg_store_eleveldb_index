@@ -89,12 +89,11 @@ delete_by_file(File, Ref) ->
   DeleteKeys = eleveldb:fold(Ref,
                            fun({Key, Obj}, Acc) ->
                                case (binary_to_term(Obj))#msg_location.file of
-                                 File -> [Key | Acc];
+                                 File -> [{delete, Key} | Acc];
                                  _ -> Acc
                                end
-                           end, [], [{verify_checksums, true}]),
-  DeleteOps = lists:map(fun(Key) -> {delete, Key} end, DeleteKeys),
-  ok = eleveldb:write(Ref, DeleteOps, []),
+                           end, [], []),
+  ok = eleveldb:write(Ref, DeleteKeys, []),
   ok.
 
 terminate(Ref) ->
