@@ -86,16 +86,15 @@ delete_object(Obj = #msg_location{ msg_id = MsgId }, Ref) ->
   end.
 
 delete_by_file(File, Ref) ->
-  eleveldb:fold(Ref,
-                fun({Key, Obj}, Acc) ->
-                    case (binary_to_term(Obj))#msg_location.file of
-                      File ->
-                        eleveldb:delete(Ref, Key, []),
-                        Acc;
-                      _ ->
-                        Acc
-                    end
-                end, [], []),
+  DeleteKeys = eleveldb:fold(Ref,
+                           fun({Key, Obj}, Acc) ->
+                               case (binary_to_term(Obj))#msg_location.file of
+                                 File -> [Key | Acc];
+                                 _ -> Acc
+                               end
+                           end, [], [{verify_checksums, true}]),
+  DeleteOps = lists:map(fun(Key) -> {delete, Key} end, DeleteKeys),
+  ok = eleveldb:write(Ref, DeleteOps, []),
   ok.
 
 terminate(Ref) ->
