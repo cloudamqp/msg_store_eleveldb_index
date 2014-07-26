@@ -24,9 +24,7 @@ new(Dir) ->
                             {verify_compactions, true},
                             {use_bloomfilter, true}]) of
     {ok, Ref} -> Ref;
-    {error, Reason} ->
-      lager:error("Leveldb backend error ~s\n", [Reason]),
-      error
+    {error, Reason} -> {error, Reason}
   end.
 
 recover(Dir) ->
