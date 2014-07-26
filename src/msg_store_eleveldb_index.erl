@@ -29,7 +29,8 @@ new(Dir) ->
 
 recover(Dir) ->
   Path = get_path(Dir),
-  eleveldb:open(Path, [{create_if_missing, false}]).
+  eleveldb:open(Path, [{create_if_missing, false},
+                       {verify_compactions, true}]).
 
 get_path(Dir) ->
   filename:join(Dir, ?ELEVELDB_DIR).
