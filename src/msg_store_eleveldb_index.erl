@@ -93,7 +93,7 @@ delete_by_file(File, Ref) ->
                                  _ -> Acc
                                end
                            end, [], []),
-  ok = eleveldb:write(Ref, DeleteKeys, []),
+  eleveldb:write(Ref, DeleteKeys, []),
   ok.
 
 terminate(Ref) ->
