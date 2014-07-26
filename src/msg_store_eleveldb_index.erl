@@ -19,6 +19,7 @@
 new(Dir) ->
   Path = get_path(Dir),
   case eleveldb:open(Path, [{create_if_missing, true},
+                            {compression, false},
                             {error_if_exists, false},
                             {verify_compactions, true},
                             {use_bloomfilter, true}]) of
