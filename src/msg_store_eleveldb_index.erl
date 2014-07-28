@@ -57,11 +57,10 @@ update_fields(Key, Updates, Ref) ->
   case eleveldb:get(Ref, Key, []) of
     {ok, Value} ->
       Obj = #msg_location{} = binary_to_term(Value),
-      NewObj =
-      case is_list(Updates) of
-        true -> lists:foldl(fun update_fun/2, Obj, Updates);
-        false -> update_fun(Updates, Obj)
-      end,
+      NewObj = case is_list(Updates) of
+                 true -> lists:foldl(fun update_fun/2, Obj, Updates);
+                 false -> update_fun(Updates, Obj)
+               end,
       ok = eleveldb:put(Ref, Key, term_to_binary(NewObj), []),
       ok;
     _ -> not_found
