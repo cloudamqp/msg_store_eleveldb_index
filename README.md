@@ -4,6 +4,10 @@ This project implements a RabbitMQ _message store index_ using **eLevelDB** as b
 
 ## Installation
 
+Prerequisites:
+
+    apt-get install git-core build-essential xsltproc zip erlang-dev mercurial
+
 Get the `rabbitmq-public-umbrella`
 
 		$ hg clone http://hg.rabbitmq.com/rabbitmq-public-umbrella
