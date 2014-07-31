@@ -1,9 +1,9 @@
 -module(msg_store_eleveldb_index).
-
+-include_lib("rabbit_common/include/rabbit_msg_store.hrl").
 -behaviour(rabbit_msg_store_index).
 
 -rabbit_boot_step({msg_store_eleveldb_index,
-                   [{description, "eLevelDB backend for rabbit_msg_store_index"},
+                   [{description, "eLevelDB backed message index storage"},
                     {mfa, {application, set_env,
                            [rabbit, msg_store_index_module, ?MODULE]}},
                     {enables, recovery}]}).
@@ -12,28 +12,56 @@
          lookup/2, insert/2, update/2, update_fields/3, delete/2,
          delete_object/2, delete_by_file/2, terminate/1]).
 
--include_lib("rabbit_common/include/rabbit_msg_store.hrl").
-
 -define(ELEVELDB_DIR, "eleveldb_msg_index").
 
 new(Dir) ->
   Path = get_path(Dir),
+  del_dir(Path),
+  rabbit_log:info("Creating new eLevelDB in ~s~n", [Path]),
   case eleveldb:open(Path, [{create_if_missing, true},
+                            {error_if_exists, true},
                             {compression, false},
-                            {error_if_exists, false},
-                            {verify_compactions, true},
+                            {verify_compactions, false},
                             {use_bloomfilter, true}]) of
     {ok, Ref} -> Ref;
-    {error, Reason} -> {error, Reason}
+    {error, Reason} ->
+      rabbit_log:error("Error opening eLevelDB: ~w~n", [Reason]),
+      {error, Reason}
   end.
 
 recover(Dir) ->
   Path = get_path(Dir),
-  eleveldb:open(Path, [{create_if_missing, false},
-                       {verify_compactions, true}]).
+  rabbit_log:info("Recovering eLevelDB in ~s~n", [Path]),
+  case eleveldb:open(Path, [{create_if_missing, false},
+                            {paranoid_checks, false},
+                            {compression, false},
+                            {verify_compactions, true},
+                            {use_bloomfilter, true}]) of
+    {ok, Ref} -> {ok, Ref};
+    {error, Reason} -> 
+      rabbit_log:error("Error recovering eLevelDB: ~w~n", [Reason]),
+      {error, Reason}
+  end.
+
 
 get_path(Dir) ->
   filename:join(Dir, ?ELEVELDB_DIR).
+
+del_dir(Dir) ->
+  case file:del_dir(Dir) of
+    {error, eexist} ->
+      {ok, FilesInDir} = file:list_dir_all(Dir),
+      {Files, Dirs} = lists:foldl(fun(F, {Fs, Ds}) ->
+                                         Path = filename:join(Dir, F),
+                                         case filelib:is_dir(Path) of
+                                           true -> {Fs, [Path | Ds]};
+                                           false -> {[Path | Fs], Ds}
+                                         end
+                                     end, {[],[Dir]}, FilesInDir),
+      [ok = file:delete(F) || F <- Files],
+      [ok = file:del_dir(D) || D <- Dirs];
+    _ -> ok
+  end.
 
 %% Key is MsgId which is binary already
 lookup(Key, Ref) ->
@@ -85,15 +113,19 @@ delete_object(Obj = #msg_location{ msg_id = MsgId }, Ref) ->
   end.
 
 delete_by_file(File, Ref) ->
-  DeleteMe = eleveldb:fold(Ref,
-                           fun({Key, Obj}, Acc) ->
-                               case (binary_to_term(Obj))#msg_location.file of
-                                 File -> [Key | Acc];
-                                 _ -> Acc
-                               end
-                           end, [], []),
-  [ok = eleveldb:delete(Ref, Key, []) || Key <- DeleteMe],
+  DeleteKeys = eleveldb:fold(Ref,
+                             fun({Key, Obj}, Acc) ->
+                                 case (binary_to_term(Obj))#msg_location.file of
+                                   File -> [{delete, Key} | Acc];
+                                   _ -> Acc
+                                 end
+                             end, [], [{verify_checksums, true}]),
+  ok = eleveldb:write(Ref, DeleteKeys, [{sync, true}]),
+  rabbit_log:info("eLevelDB deleted keys: ~w~n", [DeleteKeys]),
   ok.
 
 terminate(Ref) ->
-  eleveldb:close(Ref).
+  ok = eleveldb:close(Ref),
+  rabbit_log:info("eLevelDB closed~n", []),
+  ok.
+
