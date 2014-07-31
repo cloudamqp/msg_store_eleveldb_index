@@ -16,10 +16,11 @@
 
 new(Dir) ->
   Path = get_path(Dir),
-  del_dir(Path),
-  rabbit_log:info("Creating new eLevelDB in ~s~n", [Path]),
+  ok = del_dir(Path),
+  rabbit_log:info("Creating new eLevelDB in ~s~n", [filename:basename(Dir)]),
   case eleveldb:open(Path, [{create_if_missing, true},
                             {error_if_exists, true},
+                            {paranoid_checks, false},
                             {compression, false},
                             {verify_compactions, false},
                             {use_bloomfilter, true}]) of
@@ -31,8 +32,9 @@ new(Dir) ->
 
 recover(Dir) ->
   Path = get_path(Dir),
-  rabbit_log:info("Recovering eLevelDB in ~s~n", [Path]),
+  rabbit_log:info("Recovering eLevelDB in ~s~n", [filename:basename(Dir)]),
   case eleveldb:open(Path, [{create_if_missing, false},
+                            {error_if_exists, false},
                             {paranoid_checks, false},
                             {compression, false},
                             {verify_compactions, true},
@@ -49,6 +51,8 @@ get_path(Dir) ->
 
 del_dir(Dir) ->
   case file:del_dir(Dir) of
+    ok -> ok;
+    {error, enoent} -> ok;
     {error, eexist} ->
       {ok, FilesInDir} = file:list_dir_all(Dir),
       {Files, Dirs} = lists:foldl(fun(F, {Fs, Ds}) ->
@@ -59,8 +63,9 @@ del_dir(Dir) ->
                                          end
                                      end, {[],[Dir]}, FilesInDir),
       [ok = file:delete(F) || F <- Files],
-      [ok = file:del_dir(D) || D <- Dirs];
-    _ -> ok
+      [ok = file:del_dir(D) || D <- Dirs],
+      ok;
+    {error, Reason} -> {error, Reason}
   end.
 
 %% Key is MsgId which is binary already
@@ -119,9 +124,8 @@ delete_by_file(File, Ref) ->
                                    File -> [{delete, Key} | Acc];
                                    _ -> Acc
                                  end
-                             end, [], [{verify_checksums, true}]),
-  ok = eleveldb:write(Ref, DeleteKeys, [{sync, true}]),
-  rabbit_log:info("eLevelDB deleted keys: ~w~n", [DeleteKeys]),
+                             end, [], []),
+  ok = eleveldb:write(Ref, DeleteKeys, []),
   ok.
 
 terminate(Ref) ->
