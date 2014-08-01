@@ -16,8 +16,9 @@
 
 new(Dir) ->
   Path = get_path(Dir),
+  Store = filename:basename(Dir),
   ok = del_dir(Path),
-  rabbit_log:info("Creating new eLevelDB in ~s~n", [filename:basename(Dir)]),
+  rabbit_log:info("~s: creating new eLevelDB~n", [Store]),
   case eleveldb:open(Path, [{create_if_missing, true},
                             {error_if_exists, true},
                             {paranoid_checks, false},
@@ -26,13 +27,14 @@ new(Dir) ->
                             {use_bloomfilter, true}]) of
     {ok, Ref} -> Ref;
     {error, Reason} ->
-      rabbit_log:error("Error opening eLevelDB: ~w~n", [Reason]),
+      rabbit_log:error("~s: error recovering eLevelDB~n~w~n", [Store, Reason]),
       {error, Reason}
   end.
 
 recover(Dir) ->
   Path = get_path(Dir),
-  rabbit_log:info("Recovering eLevelDB in ~s~n", [filename:basename(Dir)]),
+  Store = filename:basename(Dir),
+  rabbit_log:info("~s: recovering eLevelDB~n", [Store]),
   case eleveldb:open(Path, [{create_if_missing, false},
                             {error_if_exists, false},
                             {paranoid_checks, false},
@@ -41,7 +43,7 @@ recover(Dir) ->
                             {use_bloomfilter, true}]) of
     {ok, Ref} -> {ok, Ref};
     {error, Reason} -> 
-      rabbit_log:error("Error recovering eLevelDB: ~w~n", [Reason]),
+      rabbit_log:error("~s: error recovering eLevelDB~n~w~n", [Store, Reason]),
       {error, Reason}
   end.
 
@@ -129,7 +131,6 @@ delete_by_file(File, Ref) ->
   ok.
 
 terminate(Ref) ->
-  ok = eleveldb:close(Ref),
-  rabbit_log:info("eLevelDB closed~n", []),
-  ok.
+  rabbit_log:info("Terminating eLevelDB~n", []),
+  ok = eleveldb:close(Ref).
 
