@@ -78,12 +78,10 @@ lookup(Key, Ref) ->
   end.
 
 insert(Obj = #msg_location{ msg_id = MsgId }, Ref) ->
-  ok = eleveldb:put(Ref, MsgId, term_to_binary(Obj), []),
-  ok.
+  ok = eleveldb:put(Ref, MsgId, term_to_binary(Obj), []).
 
 update(Obj = #msg_location{ msg_id = MsgId }, Ref) ->
-  ok = eleveldb:put(Ref, MsgId, term_to_binary(Obj), []),
-  ok.
+  ok = eleveldb:put(Ref, MsgId, term_to_binary(Obj), []).
 
 update_fun({Position, NewValue}, ObjAcc) ->
   setelement(Position, ObjAcc, NewValue).
@@ -96,23 +94,20 @@ update_fields(Key, Updates, Ref) ->
                  true -> lists:foldl(fun update_fun/2, Obj, Updates);
                  false -> update_fun(Updates, Obj)
                end,
-      ok = eleveldb:put(Ref, Key, term_to_binary(NewObj), []),
-      ok;
+      ok = eleveldb:put(Ref, Key, term_to_binary(NewObj), []);
     _ -> not_found
   end,
   ok.
 
 delete(Key, Ref) ->
-  ok = eleveldb:delete(Ref, Key, []),
-  ok.
+  ok = eleveldb:delete(Ref, Key, []).
 
 delete_object(Obj = #msg_location{ msg_id = MsgId }, Ref) ->
   case eleveldb:get(Ref, MsgId, []) of
     {ok, Value} ->
       case Obj =:= binary_to_term(Value) of
         true ->
-          ok = eleveldb:delete(Ref, MsgId, []),
-          ok;
+          ok = eleveldb:delete(Ref, MsgId, []);
         _ ->
           not_found
       end;
@@ -127,8 +122,7 @@ delete_by_file(File, Ref) ->
                                    _ -> Acc
                                  end
                              end, [], []),
-  ok = eleveldb:write(Ref, DeleteKeys, []),
-  ok.
+  ok = eleveldb:write(Ref, DeleteKeys, []).
 
 terminate(Ref) ->
   rabbit_log:info("Terminating eLevelDB~n", []),
