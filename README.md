@@ -6,27 +6,30 @@ This project implements a RabbitMQ _message store index_ using **eLevelDB** as b
 
 Prerequisites:
 
-    apt-get install git-core build-essential xsltproc zip erlang-dev mercurial
+	apt-get install git-core build-essential xsltproc zip erlang-dev mercurial
 
 Get the `rabbitmq-public-umbrella`
 
-		$ hg clone http://hg.rabbitmq.com/rabbitmq-public-umbrella
-		$ cd rabbitmq-public-umbrella
-		$ make co
+	hg clone http://hg.rabbitmq.com/rabbitmq-public-umbrella
+	cd rabbitmq-public-umbrella
+	make co
 
 Get the [eleveldb_wrapper](https://github.com/cloudamqp/eleveldb_wrapper):
 
 Inside the `rabbitmq-public-umbrella` directory do:
 
-		$ git clone git://github.com/cloudamqp/eleveldb_wrapper.git
+	git clone git://github.com/cloudamqp/eleveldb_wrapper.git
 
 Then clone this repository:
 
-		$ git clone git://github.com/cloudamqp/msg_store_eleveldb_index.git
-		$ cd msg_store_eleveldb_index
-		$ make
+	git clone git://github.com/cloudamqp/msg_store_eleveldb_index.git
+	cd msg_store_eleveldb_index
+	make
 
 Copy the files inside `msg_store_eleveldb_index/dist` into your RabbitMQ `plugins` folder. Don't copy the file `rabbit_common-0.0.0.ez`.
+
+	cp dist/eleveldb-*5.ez dist/msg_store_eleveldb_index-*.ez /usr/lib/rabbitmq/lib/rabbitmq_server-*/plugins/
+
 
 Enable the plugin with:
 
