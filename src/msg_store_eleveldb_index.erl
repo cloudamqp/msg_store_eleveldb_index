@@ -22,7 +22,7 @@ new(Dir) ->
   case eleveldb:open(Path, [{create_if_missing, true},
                             {error_if_exists, true},
                             {paranoid_checks, false},
-                            {compression, false},
+                            {compression, true},
                             {verify_compactions, false},
                             {total_leveldb_mem_percent, 50},
                             {use_bloomfilter, true}]) of
@@ -39,7 +39,7 @@ recover(Dir) ->
   case eleveldb:open(Path, [{create_if_missing, false},
                             {error_if_exists, false},
                             {paranoid_checks, false},
-                            {compression, false},
+                            {compression, true},
                             {verify_compactions, false},
                             {total_leveldb_mem_percent, 50},
                             {use_bloomfilter, true}]) of
