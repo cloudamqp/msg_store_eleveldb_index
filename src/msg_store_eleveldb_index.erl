@@ -24,7 +24,7 @@ new(Dir) ->
                             {paranoid_checks, false},
                             {compression, true},
                             {verify_compactions, false},
-                            {total_leveldb_mem_percent, 50},
+                            {total_leveldb_mem_percent, 40},
                             {use_bloomfilter, true}]) of
     {ok, Ref} -> Ref;
     {error, Reason} ->
@@ -41,7 +41,7 @@ recover(Dir) ->
                             {paranoid_checks, false},
                             {compression, true},
                             {verify_compactions, false},
-                            {total_leveldb_mem_percent, 50},
+                            {total_leveldb_mem_percent, 40},
                             {use_bloomfilter, true}]) of
     {ok, Ref} -> {ok, Ref};
     {error, Reason} -> 
