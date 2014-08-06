@@ -65,11 +65,11 @@ del_dir(Dir) ->
                                            true -> {Fs, [Path | Ds]};
                                            false -> {[Path | Fs], Ds}
                                          end
-                                     end, {[],[Dir]}, FilesInDir),
+                                     end, {[],[]}, FilesInDir),
       [ok = file:delete(F) || F <- Files],
-      [ok = file:del_dir(D) || D <- Dirs],
-      ok;
-    {error, Reason} -> {error, Reason}
+      [ok = del_dir(D) || D <- Dirs],
+      ok = file:del_dir(Dir);
+    {error, Reason} -> {erro, Reason}
   end.
 
 %% Key is MsgId which is binary already
