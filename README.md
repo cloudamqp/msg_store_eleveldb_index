@@ -28,7 +28,7 @@ Then clone this repository:
 
 Copy the files inside `msg_store_eleveldb_index/dist` into your RabbitMQ `plugins` folder. Don't copy the file `rabbit_common-0.0.0.ez`.
 
-	cp dist/eleveldb-*5.ez dist/msg_store_eleveldb_index-*.ez /usr/lib/rabbitmq/lib/rabbitmq_server-*/plugins/
+	cp dist/eleveldb-*.ez dist/msg_store_eleveldb_index-*.ez /usr/lib/rabbitmq/lib/rabbitmq_server-*/plugins/
 
 
 Enable the plugin with:
