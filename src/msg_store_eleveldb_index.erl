@@ -19,13 +19,8 @@ new(Dir) ->
   Store = filename:basename(Dir),
   ok = del_dir(Path),
   rabbit_log:info("~s: creating new eLevelDB~n", [Store]),
-  case eleveldb:open(Path, [{create_if_missing, true},
-                            {error_if_exists, true},
-                            {paranoid_checks, false},
-                            {compression, true},
-                            {verify_compactions, false},
-                            {total_leveldb_mem_percent, 40},
-                            {use_bloomfilter, true}]) of
+  case eleveldb:open(Path, settings([{create_if_missing, true},
+                                     {error_if_exists, true}])) of
     {ok, Ref} -> Ref;
     {error, Reason} ->
       rabbit_log:error("~s: error recovering eLevelDB~n~w~n", [Store, Reason]),
@@ -36,15 +31,10 @@ recover(Dir) ->
   Path = get_path(Dir),
   Store = filename:basename(Dir),
   rabbit_log:info("~s: recovering eLevelDB~n", [Store]),
-  case eleveldb:open(Path, [{create_if_missing, false},
-                            {error_if_exists, false},
-                            {paranoid_checks, false},
-                            {compression, true},
-                            {verify_compactions, false},
-                            {total_leveldb_mem_percent, 40},
-                            {use_bloomfilter, true}]) of
+  case eleveldb:open(Path, settings([{create_if_missing, false},
+                                     {error_if_exists, false}])) of
     {ok, Ref} -> {ok, Ref};
-    {error, Reason} -> 
+    {error, Reason} ->
       rabbit_log:error("~s: error recovering eLevelDB~n~w~n", [Store, Reason]),
       {error, Reason}
   end.
@@ -60,12 +50,12 @@ del_dir(Dir) ->
     {error, eexist} ->
       {ok, FilesInDir} = file:list_dir_all(Dir),
       {Files, Dirs} = lists:foldl(fun(F, {Fs, Ds}) ->
-                                         Path = filename:join(Dir, F),
-                                         case filelib:is_dir(Path) of
-                                           true -> {Fs, [Path | Ds]};
-                                           false -> {[Path | Fs], Ds}
-                                         end
-                                     end, {[],[]}, FilesInDir),
+                                      Path = filename:join(Dir, F),
+                                      case filelib:is_dir(Path) of
+                                        true -> {Fs, [Path | Ds]};
+                                        false -> {[Path | Fs], Ds}
+                                      end
+                                  end, {[],[]}, FilesInDir),
       [ok = file:delete(F) || F <- Files],
       [ok = del_dir(D) || D <- Dirs],
       ok = file:del_dir(Dir);
@@ -129,4 +119,11 @@ delete_by_file(File, Ref) ->
 terminate(Ref) ->
   rabbit_log:info("Terminating eLevelDB~n", []),
   ok = eleveldb:close(Ref).
+
+settings(Opts) ->
+  [{compression, application:get_env(eleveldb, compression, true)},
+   {total_leveldb_mem_percent, application:get_env(eleveldb, total_leveldb_mem_percent, 10)},
+   {use_bloomfilter, application:get_env(eleveldb, use_bloomfilter, false)},
+   {paranoid_checks, false},
+   {verify_compactions, false}] ++ Opts.
 
