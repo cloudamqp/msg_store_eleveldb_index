@@ -1,16 +1,33 @@
 # LevelDB message index store for RabbitMQ
 
-This project implements a RabbitMQ _message store index_ using **eLevelDB** as backend database. Basically the message index keeps tracks of which messages are stored on which files on your filesystem. For more details on how RabbitMQ's message store work read the documentation on this file which is quite extensive [http://hg.rabbitmq.com/rabbitmq-server/file/59fa7d144fe1/src/rabbit_msg_store.erl](http://hg.rabbitmq.com/rabbitmq-server/file/59fa7d144fe1/src/rabbit_msg_store.erl). There's also a blog post from the RabbitMQ team here: [http://www.rabbitmq.com/blog/2011/01/20/rabbitmq-backing-stores-databases-and-disks/](http://www.rabbitmq.com/blog/2011/01/20/rabbitmq-backing-stores-databases-and-disks/).
+This project implements a RabbitMQ message index using [LevelDB](https://github.com/google/leveldb) for on-disk storage.
+
+That eliminates the fixed per-message RAM cost RabbitMQ's default (RAM-only) message index has, allowing you to queue messages until you run out of disk space.
+
+## Read Before Using This Module
+
+When using this module, **make sure you have more file descriptors allocated to the RabbitMQ process**. RabbitMQ's
+file descriptor monitor will not account for the descriptors used by LevelDB.
+
+Failing to do so may result in RabbitMQ process running out of file descriptors and not noticing it. This **can lead
+to data loss**.
+
+We recommend allowing at least `65536` file descriptors per node when used with this plugin.
+
+## Supported RabbitMQ Releases
+
+This plugin targets RabbitMQ `3.4.4` and later versions.
+
 
 ## Installation
 
 Prerequisites:
 
-	apt-get install git-core build-essential xsltproc zip erlang-dev mercurial
+	apt-get install git-core build-essential xsltproc zip erlang-dev
 
 Get the `rabbitmq-public-umbrella`
 
-	hg clone http://hg.rabbitmq.com/rabbitmq-public-umbrella
+	git clone http://hg.rabbitmq.com/rabbitmq-public-umbrella
 	cd rabbitmq-public-umbrella
 	make co
 
@@ -39,17 +56,12 @@ To make RabbitMQ use the plugin as index module you have to configure it in `/et
 
     {rabbit, [{msg_store_index_module, msg_store_eleveldb_index}]}
 
-eLevelDB required SMP, so on single core machines add to `/etc/rabbitmq/rabbitmq-env.conf`:
+eLevelDB requires SMP. On single core machines please add the following to to `/etc/rabbitmq/rabbitmq-env.conf`:
 
     SERVER_START_ARGS="-smp enable"
 
-## Use case
+## Credits
 
-In a default RabbitMQ installation your RAM amount will limit how many messages you can enqueue. This plugin allow you to queue messages until you run out of disc space.
-
-## Creds
-
-Based on works of [Alvaro Videla](https://github.com/videlalvaro).
+Based on the work of [Alvaro Videla](https://github.com/videlalvaro).
 
 Thanks to Basho for eLevelDB and to Google for LevelDB.
-
