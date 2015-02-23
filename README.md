@@ -68,4 +68,4 @@ Thanks to Basho for eLevelDB and to Google for LevelDB.
 
 ## License
 
-See [./LICENSE].
+See [LICENSE](./LICENSE).
