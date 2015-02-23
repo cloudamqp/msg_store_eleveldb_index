@@ -1,4 +1,4 @@
-# LevelDB message index store for RabbitMQ
+# LevelDB Message Index for RabbitMQ
 
 This project implements a RabbitMQ message index using [LevelDB](https://github.com/google/leveldb) for on-disk storage.
 
