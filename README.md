@@ -65,3 +65,7 @@ eLevelDB requires SMP. On single core machines please add the following to to `/
 Based on the work of [Alvaro Videla](https://github.com/videlalvaro).
 
 Thanks to Basho for eLevelDB and to Google for LevelDB.
+
+## License
+
+See [./LICENSE].
