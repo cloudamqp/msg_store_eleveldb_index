@@ -60,6 +60,16 @@ eLevelDB requires SMP. On single core machines please add the following to to `/
 
     SERVER_START_ARGS="-smp enable"
 
+## Configuration
+
+In `rabbitmq.config` this plugin can be configured as such: 
+
+```
+[{eleveldb, [{total_leveldb_mem_percent, 10},
+             {compression, true},
+             {use_bloomfilter, false}]}].
+```
+
 ## Credits
 
 Based on the work of [Alvaro Videla](https://github.com/videlalvaro).
